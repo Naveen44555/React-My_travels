@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
-
 import RegisterForm from './deepcomponents/RegisterForm'
-// import LoginForm from './components/LoginForm'
 import {Routes,Route} from 'react-router-dom'
 import BusList from './deepcomponents/BusList'
 import Busseats from './deepcomponents/BusSeats'
@@ -31,7 +29,6 @@ const App = () => {
   const handlelogin = (newToken, newUserId) =>{
     localStorage.setItem('token', newToken)
     localStorage.setItem('userId', newUserId)
-
     setToken(newToken)
     setuserId(newUserId)
 
@@ -48,8 +45,6 @@ const handleLogout = () =>{
     setToken(null)
     setuserId(null)
 }
-
-
   return(
     <div>
       {/* <Wrapper handleLogout = {handleLogout} token={token}>
@@ -62,24 +57,37 @@ const handleLogout = () =>{
       <Route path='/my-bookings' element ={<UserBookings token={token} userId={userId}/>} />
      </Routes>
       </Wrapper> */}
-     {showWelcome && (
-    <>
-        <Confetti numberOfPieces={300} recycle={false} />
 
-        <div className="fixed inset-0 flex items-start justify-center z-50 pointer-events-none">
-            <div className="mt-20 bg-gradient-to-r from-yellow-300 to-red-400 text-green rounded-2xl shadow-2xl px-10 py-6 text-center transform transition-all duration-700 ease-out animate-slideDown">
-                
-                <h2 className="text-2xl font-bold mb-2">
-                    🎉 Welcome to Bus App!
-                </h2>
-                <p className="text-green/90">
-                   Plan it,Book it,Go head🚍✨
-                </p>
+  {showWelcome && (
+  <>
+    <Confetti
+  numberOfPieces={350}
+  recycle={false}
+  width={window.innerWidth}
+  height={window.innerHeight}
+  style={{ position: "fixed", top: 0, left: 0, zIndex: 1 }}
+/>
 
-            </div>
-        </div>
-    </>
-)}
+   <div className="fixed top-10 left-0 right-0 flex justify-center z-[9999] px-4">
+  <div className="animate-slideDown
+  bg-gradient-to-r from-yellow-400 to-red-500 
+  text-white rounded-2xl shadow-2xl 
+  px-6 py-4 text-center w-full max-w-md">
+
+    <h2 className="text-lg sm:text-xl font-bold">
+      🎉 Welcome to Bus App!
+    </h2>
+
+    <p className="text-sm mt-1">
+      🚍✨ Plan It, Book It, Go Ahead ✨🚍
+    </p>
+
+  </div>
+</div>
+
+
+  </>
+)}  
 
       <Wrapper handleLogout = {handleLogout} token={token}>
      <Routes>
@@ -89,10 +97,7 @@ const handleLogout = () =>{
       </ProtectedRoute>} />
 
           <Route path ='/register' element={<RegisterForm />}/>
-
      <Route path='/login' element={<LoginForm onlogin={handlelogin} />} />
-
-      <Route path='/login' element = {<LoginForm onlogin = {handlelogin}/>} />
      {/* <Route path='/bus/:busId' element={token ? <Busseats token={token}/> : <LoginForm onlogin={handlelogin} />} /> */}
        
        <Route path='/bus/:busId' element={<ProtectedRoute token={token}><Busseats token={token}/></ProtectedRoute>} />
@@ -105,5 +110,4 @@ const handleLogout = () =>{
     </div>
   )
 }
-
 export default App

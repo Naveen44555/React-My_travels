@@ -9,6 +9,10 @@ const Busseats = ({ token }) => {
     const [seats, setSeats] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedSeat, setSelectedSeat] = useState(null)
+    const [showConfirm, setShowConfirm] = useState(false)
+    const [showSuccess, setShowSuccess] = useState(false)
+    
+const [selectedSeatId, setSelectedSeatId] = useState(null)
 
     const { busId } = useParams()
     const navigate = useNavigate()
@@ -30,33 +34,52 @@ const Busseats = ({ token }) => {
         fetchBusDetails()
     }, [busId])
 
-    const handleBook = async (seatId) => {
-        if (!token) {
-            alert("Please login for booking your seat")
-            navigate('/login')
-            return
-        }
-
-        try {
-            await axios.post("https://travels-app-djangrf-main.onrender.com/api/booking/",
-                { seat: seatId },
-                {
-                    headers: {
-                        Authorization: `Token ${token}`
-                    }
-                }
-            )
-            alert("Booking successful")
-            setSeats((prevSeats) =>
-                prevSeats.map((seat) =>
-                    seat.id === seatId
-                        ? { ...seat, is_booked: true } : seat
-                )
-            )
-        } catch (error) {
-            alert(error.response?.data?.error || "Booking failed")
-        }
+  const handleBook = (seatId) => {
+    if (!token) {
+        alert("Please login for booking your seat")
+        navigate('/login')
+        return
     }
+
+    setSelectedSeatId(seatId)
+    setShowConfirm(true)
+}
+
+const confirmBooking = async () => {
+    try {
+        await axios.post(
+            "https://travels-app-djangrf-main.onrender.com/api/booking/",
+            {
+                seat: selectedSeatId,
+                bus: bus.id
+            },
+            {
+                headers: {
+                    Authorization: `Token ${token}`
+                }
+            }
+        )
+
+        setShowConfirm(false)      // close confirm popup
+        setShowSuccess(true)      // show success popup
+        
+        setSeats((prevSeats) =>
+            prevSeats.map((seat) =>
+                seat.id === selectedSeatId
+                    ? { ...seat, is_booked: true }
+                    : seat
+            )
+        )
+
+        setTimeout(() => {
+            setShowSuccess(false)
+            // window.location.reload()
+        }, 2000)
+
+    } catch (error) {
+        alert("Booking Failed ❌")
+    }
+}
 
     if (loading) {
         return (
@@ -80,12 +103,13 @@ const Busseats = ({ token }) => {
                     <>
                         {/* Bus Details Card */}
                         <div className="bg-white rounded-xl shadow-lg p-5 mb-3">
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
 
                                 {/* Left Side */}
                                 <div className="flex items-center gap-3">
                                     <Bus className="h-8 w-8 text-indigo-600" />
-                                    <h1 className="text-2xl font-bold text-gray-900">
+                                  <h1 className="text-lg sm:text-2xl font-bold text-gray-900 break-words">
+
                                         {bus.bus_name}
                                     </h1>
                                     <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">
@@ -94,7 +118,7 @@ const Busseats = ({ token }) => {
                                 </div>
 
                                 {/* Right Side - Ticket Cost */}
-                                <div className="text-center">
+                                <div className="text-left sm:text-center">
                                     <p className="text-sm text-gray-500">Ticket Cost</p>
                                     <p className="font-bold text-purple-600 text-xl">
                                         ₹{bus.price}
@@ -141,7 +165,7 @@ const Busseats = ({ token }) => {
                             </h2>
 
                             {/* Seat Legend */}
-                            <div className="flex gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div className="flex flex-wrap gap-4 mb-4 p-1 bg-gray-50 rounded-lg">
                                 <div className="flex items-center gap-2">
                                     <div className="w-6 h-6 bg-green-500 rounded-lg"></div>
                                     <span className="text-sm text-gray-600">Available</span>
@@ -180,6 +204,8 @@ const Busseats = ({ token }) => {
                                 ))}
                             </div>
 
+
+  
                             {/* Booking Info */}
                             <div className="mt-8 p-4 bg-indigo-50 rounded-lg">
                                 <p className="text-sm text-indigo-800">
@@ -191,6 +217,58 @@ const Busseats = ({ token }) => {
                     </>
                 )}
             </div>
+            
+            {showConfirm && (
+    <div className="fixed inset-0 flex items-center justify-center bg-opacity-40 z-50">
+
+        <div className="bg-gradient-to-br from-purple-200 to-purple-600 text-white rounded-2xl p-6 w-80 text-center shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+
+
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">
+                Confirm booking for Seat 
+            </h2>
+
+            <div className="flex justify-center gap-4">
+                <button
+                    onClick={() => setShowConfirm(false)}
+                    className="px-4 py-2 bg-indigo-400 text-white rounded-lg hover:bg-blue-300"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    onClick={confirmBooking}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-red-700"
+                >
+                    Confirm
+                </button>
+            </div>
+                
+
+
+                
+        </div>
+    </div>
+)}
+    {showSuccess && (
+    <div className="fixed inset-0 flex items-center justify-center  bg-opacity-40 z-50">
+
+        <div className="bg-gradient-to-r from-yellow-500 to-red-600 text-white rounded-2xl p-6 w-80 text-center shadow-[0_25px_60px_rgba(0,0,0,0.4)] animate">
+
+            <h2 className="text-xl font-bold mb-2">
+                🎉 Booking Successful!
+            </h2>
+
+            <p className="text-sm">
+                Your seat has been reserved successfully.
+            </p>
+
+        </div>
+    </div>
+)}
+
+
+       
         </div>
     )
 }
